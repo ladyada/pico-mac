@@ -35,8 +35,13 @@ set(SD_RX 4 CACHE STRING "SD SPI RX pin")
 set(SD_SCK 2 CACHE STRING "SD SPI SCK pin")
 set(SD_CS 5 CACHE STRING "SD SPI CS pin")
 set(SD_MHZ 5 CACHE STRING "SD SPI speed in MHz")
+option(USE_HSTX "Use HSTX digital video" OFF)
 option(USE_VGA_RES "Video uses VGA (640x480) resolution" OFF)
-set(VIDEO_PIN 18 CACHE STRING "Video GPIO base pin (followed by VS, CLK, HS)")
+set(VIDEO_PIN 18 CACHE STRING "VGA Video GPIO base pin (followed by VS, CLK, HS)")
+set(HSTX_CKP 12 CACHE STRING "HSTX CK+ PIN")
+set(HSTX_D0P 14 CACHE STRING "HSTX D0+ PIN")
+set(HSTX_D1P 16 CACHE STRING "HSTX D1+ PIN")
+set(HSTX_D2P 18 CACHE STRING "HSTX D2+ PIN")
 
 # See below, -DMEMSIZE=<size in KB> will configure umac's memory size,
 # overriding defaults.
@@ -94,12 +99,19 @@ else()
    add_compile_definitions(DISP_WIDTH=512)
    add_compile_definitions(DISP_HEIGHT=342)
 endif()
-add_compile_definitions(GPIO_VID_BASE=${VIDEO_PIN})
+
+if (USE_HSTX)
+   add_compile_definitions(HSTX_CKP=${HSTX_CKP} HSTX_D0P=${HSTX_D0P} HSTX_D1P=${HSTX_D1P} HSTX_D2P=${HSTX_D2P})
+   set(VIDEO_SRC src/video_hstx.c)
+else()
+   add_compile_definitions(GPIO_VID_BASE=${VIDEO_PIN})
+   set(VIDEO_SRC src/video_vga.c)
+endif()
 
 if (TARGET tinyusb_device)
   add_executable(firmware
     src/main.c
-    src/video.c
+    $(VIDEO_SRC)
     src/kbd.c
     src/hid.c
     ${EXTRA_SD_SRC}
