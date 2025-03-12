@@ -28,6 +28,7 @@ cmake_minimum_required(VERSION 3.13)
 # Options that should be defined when initialising the build
 # directory with cmake, e.g. "cmake .. -DOPTION=true":
 #
+# Note: to build for pico2 / rp2350: cmake .. -DPICO_BOARD=pico2
 
 option(USE_SD "Build in SD support" OFF)
 set(SD_TX 3 CACHE STRING "SD SPI TX pin")
@@ -35,8 +36,10 @@ set(SD_RX 4 CACHE STRING "SD SPI RX pin")
 set(SD_SCK 2 CACHE STRING "SD SPI SCK pin")
 set(SD_CS 5 CACHE STRING "SD SPI CS pin")
 set(SD_MHZ 5 CACHE STRING "SD SPI speed in MHz")
-option(USE_HSTX "Use HSTX digital video" OFF)
+
+option(USE_HSTX "Use HSTX digital video (only for rp2350 / pico2)" OFF)
 option(USE_VGA_RES "Video uses VGA (640x480) resolution" OFF)
+option(USE_720P_RES "Video uses 720p (1280x720) resolution (HSTX only)" OFF)
 set(VIDEO_PIN 18 CACHE STRING "VGA Video GPIO base pin (followed by VS, CLK, HS)")
 set(HSTX_CKP 12 CACHE STRING "HSTX CK+ PIN")
 set(HSTX_D0P 14 CACHE STRING "HSTX D0+ PIN")
@@ -111,7 +114,7 @@ endif()
 if (TARGET tinyusb_device)
   add_executable(firmware
     src/main.c
-    $(VIDEO_SRC)
+    ${VIDEO_SRC}
     src/kbd.c
     src/hid.c
     ${EXTRA_SD_SRC}
