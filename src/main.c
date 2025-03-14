@@ -265,7 +265,7 @@ static void     core1_main()
 
 int     main()
 {
-        set_sys_clock_khz(250*1000, true);
+        // set_sys_clock_khz(250*1000, true);
 
 	stdio_init_all();
         io_init();

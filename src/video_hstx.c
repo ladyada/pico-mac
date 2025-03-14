@@ -165,7 +165,7 @@ void    video_init(uint32_t *framebuffer) {
 
     size_t pixels_per_word = 32;
     size_t words_per_line = DISP_WIDTH / pixels_per_word;
-    uint8_t rot = 25; // 24 + color_depth;
+    uint8_t rot = 24; // 24 + color_depth;
     size_t shift_amount = 31; // color_depth % 32;
 
     size_t command_word = 0;
