@@ -51,6 +51,10 @@ set(HSTX_D2P 19 CACHE STRING "HSTX D2+ PIN")
 option(USE_VGA_RES "Video uses VGA (640x480) resolution" OFF)
 set(VIDEO_PIN 18 CACHE STRING "VGA Video GPIO base pin (followed by VS, CLK, HS)")
 
+# Pins for PIO-based USB host
+set(PIN_USB_HOST_DP CACHE STRING "1")
+set(PIN_USB_HOST_DM CACHE STRING "2")
+
 # See below, -DMEMSIZE=<size in KB> will configure umac's memory size,
 # overriding defaults.
 
@@ -121,6 +125,9 @@ else()
     pico_generate_pio_header(firmware ${CMAKE_CURRENT_LIST_DIR}/src/pio_video.pio)
 
 endif()
+
+add_compile_definitions(PIN_USB_HOST_DP=${PIN_USB_HOST_DP})
+add_compile_definitions(PIN_USB_HOST_DM=${PIN_USB_HOST_DM})
 
 if (TARGET tinyusb_device)
   add_executable(firmware
