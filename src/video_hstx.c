@@ -133,6 +133,7 @@ static void __not_in_flash_func(dma_irq_handler)(void) {
 #error Only VGA resolution is supported
 #endif
 
+__attribute__((optimize("-O0")))
 void    video_init(uint32_t *framebuffer) {
     picodvi_framebuffer_obj_t *self = &picodvi;
 
