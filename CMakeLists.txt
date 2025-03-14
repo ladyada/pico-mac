@@ -29,6 +29,8 @@ cmake_minimum_required(VERSION 3.13)
 # directory with cmake, e.g. "cmake .. -DOPTION=true":
 #
 # Note: to build for pico2 / rp2350: cmake .. -DPICO_BOARD=pico2
+# Note: to build for fruit jam:
+#    cmake -DPICO_BOARD=pico2 -DUSE_HSTX=1 -S . -B build_hstx -DPICO_SDK_PATH=../pico-sdk
 
 option(USE_SD "Build in SD support" OFF)
 set(SD_TX 3 CACHE STRING "SD SPI TX pin")
@@ -38,13 +40,16 @@ set(SD_CS 5 CACHE STRING "SD SPI CS pin")
 set(SD_MHZ 5 CACHE STRING "SD SPI speed in MHz")
 
 option(USE_HSTX "Use HSTX digital video (only for rp2350 / pico2)" OFF)
+
+# Options for HSTX output (defaults are for Adafruit FruitJam)
+set(HSTX_CKP 13 CACHE STRING "HSTX CK+ PIN")
+set(HSTX_D0P 15 CACHE STRING "HSTX D0+ PIN")
+set(HSTX_D1P 17 CACHE STRING "HSTX D1+ PIN")
+set(HSTX_D2P 19 CACHE STRING "HSTX D2+ PIN")
+
+# Options for analog VGA output
 option(USE_VGA_RES "Video uses VGA (640x480) resolution" OFF)
-option(USE_720P_RES "Video uses 720p (1280x720) resolution (HSTX only)" OFF)
 set(VIDEO_PIN 18 CACHE STRING "VGA Video GPIO base pin (followed by VS, CLK, HS)")
-set(HSTX_CKP 12 CACHE STRING "HSTX CK+ PIN")
-set(HSTX_D0P 14 CACHE STRING "HSTX D0+ PIN")
-set(HSTX_D1P 16 CACHE STRING "HSTX D1+ PIN")
-set(HSTX_D2P 18 CACHE STRING "HSTX D2+ PIN")
 
 # See below, -DMEMSIZE=<size in KB> will configure umac's memory size,
 # overriding defaults.
@@ -94,21 +99,27 @@ if (USE_SD)
    add_compile_definitions(SD_TX=${SD_TX} SD_RX=${SD_RX} SD_SCK=${SD_SCK} SD_CS=${SD_CS} SD_MHZ=${SD_MHZ})
 endif()
 
-if (USE_VGA_RES)
+if (USE_HSTX)
    add_compile_definitions(USE_VGA_RES=1)
    add_compile_definitions(DISP_WIDTH=640)
    add_compile_definitions(DISP_HEIGHT=480)
-else()
-   add_compile_definitions(DISP_WIDTH=512)
-   add_compile_definitions(DISP_HEIGHT=342)
-endif()
-
-if (USE_HSTX)
    add_compile_definitions(HSTX_CKP=${HSTX_CKP} HSTX_D0P=${HSTX_D0P} HSTX_D1P=${HSTX_D1P} HSTX_D2P=${HSTX_D2P})
    set(VIDEO_SRC src/video_hstx.c)
 else()
-   add_compile_definitions(GPIO_VID_BASE=${VIDEO_PIN})
-   set(VIDEO_SRC src/video_vga.c)
+    if (USE_VGA_RES)
+       add_compile_definitions(USE_VGA_RES=1)
+       add_compile_definitions(DISP_WIDTH=640)
+       add_compile_definitions(DISP_HEIGHT=480)
+    else()
+       add_compile_definitions(DISP_WIDTH=512)
+       add_compile_definitions(DISP_HEIGHT=342)
+    endif()
+
+    add_compile_definitions(GPIO_VID_BASE=${VIDEO_PIN})
+    set(VIDEO_SRC src/video_vga.c)
+
+    pico_generate_pio_header(firmware ${CMAKE_CURRENT_LIST_DIR}/src/pio_video.pio)
+
 endif()
 
 if (TARGET tinyusb_device)
@@ -150,8 +161,6 @@ if (TARGET tinyusb_device)
     ${UMAC_INCLUDE_PATHS}
     incbin
     )
-
-  pico_generate_pio_header(firmware ${CMAKE_CURRENT_LIST_DIR}/src/pio_video.pio)
 
   pico_enable_stdio_uart(firmware 1)
 
