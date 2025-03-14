@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include "bsp/rp2040/board.h"
+#include "bsp/rp2040/boards/adafruit_fruit_jam/board.h"
 #include "tusb.h"
 
 #include "kbd.h"

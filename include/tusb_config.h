@@ -89,6 +89,10 @@
 #define CFG_TUH_HID_EPIN_BUFSIZE    64
 #define CFG_TUH_HID_EPOUT_BUFSIZE   64
 
+#ifndef BOARD_TUH_RHPORT
+#define BOARD_TUH_RHPORT      1
+#endif
+
 #ifdef __cplusplus
  }
 #endif

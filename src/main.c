@@ -40,7 +40,8 @@
 #include "video.h"
 #include "kbd.h"
 
-#include "bsp/rp2040/board.h"
+#include "pio_usb_configuration.h"
+#include "bsp/rp2040/boards/adafruit_fruit_jam/board.h"
 #include "tusb.h"
 
 #include "umac.h"
@@ -275,9 +276,19 @@ int     main()
 	printf("Starting, init usb\n");
 
         pio_usb_configuration_t pio_cfg = PIO_USB_DEFAULT_CONFIG;
+        pio_cfg.tx_ch = 2;
+        pio_cfg.pin_dp = PICO_DEFAULT_PIO_USB_DP_PIN;
+
+//#ifdef PICO_DEFAULT_PIO_USB_VBUSEN_PIN
+  gpio_init(PICO_DEFAULT_PIO_USB_VBUSEN_PIN);
+  gpio_set_dir(PICO_DEFAULT_PIO_USB_VBUSEN_PIN, GPIO_OUT);
+  gpio_put(PICO_DEFAULT_PIO_USB_VBUSEN_PIN, PICO_DEFAULT_PIO_USB_VBUSEN_STATE);
+//#endif
+
+#if 0
         _Static_assert(PIN_USB_HOST_DP + 1 == PIN_USB_HOST_DM || PIN_USB_HOST_DP - 1 == PIN_USB_HOST_DM, "Permitted USB D+/D- configuration");
         pio_cfg.pinout = PIN_USB_HOST_DP + 1 == PIN_USB_HOST_DM ? PIO_USB_PINOUT_DPDM : PIO_USB_PINOUT_DMDP;
-        pio_cfg.pin_dp = PIN_USB_HOST_DP;
+#endif
         tuh_configure(BOARD_TUH_RHPORT, TUH_CFGID_RPI_PIO_USB_CONFIGURATION, &pio_cfg);
        
         tuh_init(BOARD_TUH_RHPORT);

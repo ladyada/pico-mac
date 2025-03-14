@@ -32,6 +32,9 @@ cmake_minimum_required(VERSION 3.13)
 # Note: to build for fruit jam:
 #    cmake -DPICO_BOARD=pico2 -DUSE_HSTX=1 -S . -B build_hstx -DPICO_SDK_PATH=../pico-sdk
 
+set(PICO_TINYUSB_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib/tinyusb)
+set(PIOUSB_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib/Pico-PIO-USB)
+
 option(USE_SD "Build in SD support" OFF)
 set(SD_TX 3 CACHE STRING "SD SPI TX pin")
 set(SD_RX 4 CACHE STRING "SD SPI RX pin")
@@ -70,8 +73,6 @@ pico_sdk_init()
 # For TUSB host stuff:
 set(FAMILY rp2040)
 set(BOARD raspberry_pi_pico)
-
-set(TINYUSB_PATH ${PICO_SDK_PATH}/lib/tinyusb)
 
 # umac subproject (and Musashi sub-subproject)
 set(UMAC_PATH ${CMAKE_CURRENT_SOURCE_DIR}/external/umac)
@@ -128,6 +129,8 @@ endif()
 
 add_compile_definitions(PIN_USB_HOST_DP=${PIN_USB_HOST_DP})
 add_compile_definitions(PIN_USB_HOST_DM=${PIN_USB_HOST_DM})
+add_compile_definitions(PICO_DEFAULT_PIO_USB_DP_PIN=${PIN_USB_HOST_DP})
+add_compile_definitions(PICO_DEFAULT_PIO_USB_DM_PIN=${PIN_USB_HOST_DM})
 
 if (TARGET tinyusb_device)
   add_executable(firmware
@@ -136,6 +139,11 @@ if (TARGET tinyusb_device)
     src/kbd.c
     src/hid.c
     ${EXTRA_SD_SRC}
+
+    ${PICO_TINYUSB_PATH}/src/portable/raspberrypi/pio_usb/hcd_pio_usb.c
+    ${PIOUSB_PATH}/src/pio_usb.c
+    ${PIOUSB_PATH}/src/pio_usb_host.c
+    ${PIOUSB_PATH}/src/usb_crc.c
 
     ${UMAC_SOURCES}
     )
@@ -163,10 +171,12 @@ if (TARGET tinyusb_device)
 
   target_include_directories(firmware PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/include
-    ${TINYUSB_PATH}/hw
-    ${TINYUSB_PATH}/src
+    ${PICO_TINYUSB_PATH}/hw
+    ${PICO_TINYUSB_PATH}/src
     ${UMAC_INCLUDE_PATHS}
+    ${PIOUSB_PATH}/src
     incbin
+    ${CMAKE_CURRENT_LIST_DIR}
     )
 
   pico_enable_stdio_uart(firmware 1)

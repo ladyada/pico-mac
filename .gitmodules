@@ -4,3 +4,9 @@
 [submodule "external/no-OS-FatFS-SD-SPI-RPi-Pico"]
 	path = external/no-OS-FatFS-SD-SPI-RPi-Pico
 	url = https://github.com/evansm7/no-OS-FatFS-SD-SPI-RPi-Pico.git
+[submodule "lib/tinyusb"]
+	path = lib/tinyusb
+	url = https://github.com/hathach/tinyusb
+[submodule "lib/Pico-PIO-USB"]
+	path = lib/Pico-PIO-USB
+	url = https://github.com/tannewt/Pico-PIO-USB
