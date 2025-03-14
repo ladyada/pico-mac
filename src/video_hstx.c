@@ -174,7 +174,7 @@ void    video_init(uint32_t *framebuffer) {
     // Write ctrl and write_addr once when not pixel doubling because they don't
     // change. (write_addr doesn't change when pixel doubling either but we need
     // to rewrite it because it is after the ctrl register.)
-    dma_channel_hw_addr(self->dma_pixel_channel)->al1_ctrl = dma_ctrl;
+    dma_channel_hw_addr(self->dma_pixel_channel)->al1_ctrl = dma_pixel_ctrl;
     dma_channel_hw_addr(self->dma_pixel_channel)->al1_write_addr = dma_write_addr;
 
     for (size_t v_scanline = 0; v_scanline < MODE_V_TOTAL_LINES; v_scanline++) {
@@ -193,8 +193,8 @@ void    video_init(uint32_t *framebuffer) {
             size_t row = v_scanline - active_start;
             size_t transfer_count = words_per_line;
             self->dma_commands[command_word++] = transfer_count;
-            uint32_t *row_start = &framebuffer[row * words_per_line];
-            self->dma_commands[command_word++] = (uintptr_t)row_start;
+            uintptr_t row_start = row * (DISP_WIDTH / 8) + (uintptr_t)framebuffer;
+            self->dma_commands[command_word++] = row_start;
         }
     }
     // Last command is NULL which will trigger an IRQ.
