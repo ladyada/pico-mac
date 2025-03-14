@@ -106,7 +106,6 @@ static uint32_t vactive_line[] = {
 };
 
 typedef struct {
-    uint32_t *framebuffer;
     uint32_t *dma_commands;
     size_t dma_commands_len; // in words
     uint8_t dma_pixel_channel;
@@ -151,8 +150,7 @@ void    video_init(uint32_t *framebuffer) {
     self->dma_pixel_channel = dma_claim_unused_channel(true);
     self->dma_command_channel = dma_claim_unused_channel(true);
 
-    size_t words_per_line;
-    words_per_line = DISP_WIDTH / 8 / sizeof(uint32_t);
+    size_t words_per_line = DISP_WIDTH / (8 * sizeof(uint32_t));
 
     size_t command_word = 0;
     size_t frontporch_start = MODE_V_TOTAL_LINES - MODE_V_FRONT_PORCH;
@@ -169,6 +167,7 @@ void    video_init(uint32_t *framebuffer) {
         DMA_CH0_CTRL_TRIG_INCR_READ_BITS |
         DMA_CH0_CTRL_TRIG_EN_BITS;
     uint32_t dma_pixel_ctrl = dma_ctrl | (DMA_SIZE_32 << DMA_CH0_CTRL_TRIG_DATA_SIZE_LSB);
+    // dma_pixel_ctrl |= DMA_CH0_CTRL_TRIG_BSWAP_BITS;
     dma_ctrl |= (DMA_SIZE_32 << DMA_CH0_CTRL_TRIG_DATA_SIZE_LSB);
 
     uint32_t dma_write_addr = (uint32_t)&hstx_fifo_hw->fifo;
@@ -203,19 +202,24 @@ void    video_init(uint32_t *framebuffer) {
     self->dma_commands[command_word++] = 0;
 
     // B&W
-    uint8_t rot = 25; // ??? really ???
-    hstx_ctrl_hw->expand_tmds =
-            rot << HSTX_CTRL_EXPAND_TMDS_L2_ROT_LSB |
-            rot << HSTX_CTRL_EXPAND_TMDS_L1_ROT_LSB |
-            rot << HSTX_CTRL_EXPAND_TMDS_L0_ROT_LSB;
-    size_t shifts_before_empty = 32;
     size_t color_depth = 1;
+    uint8_t rot = 1; // 24 + color_depth;
+    hstx_ctrl_hw->expand_tmds =
+        (color_depth - 1) << HSTX_CTRL_EXPAND_TMDS_L2_NBITS_LSB |
+            rot << HSTX_CTRL_EXPAND_TMDS_L2_ROT_LSB |
+                (color_depth - 1) << HSTX_CTRL_EXPAND_TMDS_L1_NBITS_LSB |
+            rot << HSTX_CTRL_EXPAND_TMDS_L1_ROT_LSB |
+                (color_depth - 1) << HSTX_CTRL_EXPAND_TMDS_L0_NBITS_LSB |
+            rot << HSTX_CTRL_EXPAND_TMDS_L0_ROT_LSB;
+    size_t pixels_per_word = 32;
+    size_t shifts_before_empty = (pixels_per_word % 32);
+    size_t shift_amount = color_depth % 32;
 
     // Pixels come in 32 bits at a time. color_depth dictates the number
     // of pixels per word. Control symbols (RAW) are an entire 32-bit word.
     hstx_ctrl_hw->expand_shift =
-        shifts_before_empty << HSTX_CTRL_EXPAND_SHIFT_ENC_N_SHIFTS_LSB |
-            color_depth << HSTX_CTRL_EXPAND_SHIFT_ENC_SHIFT_LSB |
+        (shifts_before_empty << HSTX_CTRL_EXPAND_SHIFT_ENC_N_SHIFTS_LSB) |
+            (shift_amount << HSTX_CTRL_EXPAND_SHIFT_ENC_SHIFT_LSB) |
             1 << HSTX_CTRL_EXPAND_SHIFT_RAW_N_SHIFTS_LSB |
             0 << HSTX_CTRL_EXPAND_SHIFT_RAW_SHIFT_LSB;
 
@@ -224,9 +228,9 @@ void    video_init(uint32_t *framebuffer) {
     hstx_ctrl_hw->csr = 0;
     hstx_ctrl_hw->csr =
         HSTX_CTRL_CSR_EXPAND_EN_BITS |
-        5u << HSTX_CTRL_CSR_CLKDIV_LSB |
-            5u << HSTX_CTRL_CSR_N_SHIFTS_LSB |
-            2u << HSTX_CTRL_CSR_SHIFT_LSB |
+        (5u << HSTX_CTRL_CSR_CLKDIV_LSB) |
+            (5u << HSTX_CTRL_CSR_N_SHIFTS_LSB) |
+            (2u << HSTX_CTRL_CSR_SHIFT_LSB) |
             HSTX_CTRL_CSR_EN_BITS;
 
     // XXX this may be wrong, because pico-mac is using an overclock (but is it OC'ing HSTX? not sure)

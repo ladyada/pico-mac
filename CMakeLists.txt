@@ -88,7 +88,7 @@ set(UMAC_SOURCES
   )
 
 set(MEMSIZE 128 CACHE STRING "Memory size, in KB")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -DPICO -DMUSASHI_CNF=\\\"../include/m68kconf.h\\\" -DUMAC_MEMSIZE=${MEMSIZE}")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ggdb -g3 -O3 -DPICO -DMUSASHI_CNF=\\\"../include/m68kconf.h\\\" -DUMAC_MEMSIZE=${MEMSIZE}")
 
 if (USE_SD)
    add_compile_definitions(USE_SD=1)
