@@ -123,7 +123,6 @@ else()
     add_compile_definitions(GPIO_VID_BASE=${VIDEO_PIN})
     set(VIDEO_SRC src/video_vga.c)
 
-    pico_generate_pio_header(firmware ${CMAKE_CURRENT_LIST_DIR}/src/pio_video.pio)
 
 endif()
 
@@ -178,6 +177,10 @@ if (TARGET tinyusb_device)
     incbin
     ${CMAKE_CURRENT_LIST_DIR}
     )
+
+  if (NOT USE_HSTX)
+    pico_generate_pio_header(firmware ${CMAKE_CURRENT_LIST_DIR}/src/pio_video.pio)
+  endif()
 
   pico_enable_stdio_uart(firmware 1)
 
