@@ -55,8 +55,8 @@ option(USE_VGA_RES "Video uses VGA (640x480) resolution" OFF)
 set(VIDEO_PIN 18 CACHE STRING "VGA Video GPIO base pin (followed by VS, CLK, HS)")
 
 # Pins for PIO-based USB host
-set(PIN_USB_HOST_DP CACHE STRING "1")
-set(PIN_USB_HOST_DM CACHE STRING "2")
+set(PIN_USB_HOST_DP 1 CACHE STRING "USB D+ PIN")
+set(PIN_USB_HOST_DM 2 CACHE STRING "USB D- PIN")
 
 # See below, -DMEMSIZE=<size in KB> will configure umac's memory size,
 # overriding defaults.
