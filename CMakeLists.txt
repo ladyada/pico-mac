@@ -30,7 +30,7 @@ cmake_minimum_required(VERSION 3.13)
 #
 # Note: to build for pico2 / rp2350: cmake .. -DPICO_BOARD=pico2
 # Note: to build for fruit jam:
-#    cmake -DPICO_BOARD=pico2 -DUSE_HSTX=1 -S . -B build_hstx -DPICO_SDK_PATH=../pico-sdk
+#    cmake -DBOARD=adafruit_fruit_jam -DPICO_BOARD=pico2 -DUSE_HSTX=1 -S . -B build_hstx -DPICO_SDK_PATH=../pico-sdk -DSD_TX=35 -DSD_RX=36 -DSD_SCK=34 -DSD_CS=39
 
 set(PICO_TINYUSB_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib/tinyusb)
 set(PIOUSB_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib/Pico-PIO-USB)
@@ -45,6 +45,7 @@ set(SD_MHZ 5 CACHE STRING "SD SPI speed in MHz")
 option(USE_HSTX "Use HSTX digital video (only for rp2350 / pico2)" OFF)
 
 # Options for HSTX output (defaults are for Adafruit FruitJam)
+# HSTX always uses 640x480 for now
 set(HSTX_CKP 13 CACHE STRING "HSTX CK+ PIN")
 set(HSTX_D0P 15 CACHE STRING "HSTX D0+ PIN")
 set(HSTX_D1P 17 CACHE STRING "HSTX D1+ PIN")
