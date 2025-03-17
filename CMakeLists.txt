@@ -46,10 +46,10 @@ option(USE_HSTX "Use HSTX digital video (only for rp2350 / pico2)" OFF)
 
 # Options for HSTX output (defaults are for Adafruit FruitJam)
 # HSTX always uses 640x480 for now
-set(HSTX_CKP 13 CACHE STRING "HSTX CK+ PIN")
-set(HSTX_D0P 15 CACHE STRING "HSTX D0+ PIN")
-set(HSTX_D1P 17 CACHE STRING "HSTX D1+ PIN")
-set(HSTX_D2P 19 CACHE STRING "HSTX D2+ PIN")
+set(HSTX_CKP 12 CACHE STRING "HSTX CK+ PIN")
+set(HSTX_D0P 14 CACHE STRING "HSTX D0+ PIN")
+set(HSTX_D1P 16 CACHE STRING "HSTX D1+ PIN")
+set(HSTX_D2P 18 CACHE STRING "HSTX D2+ PIN")
 
 # Options for analog VGA output
 option(USE_VGA_RES "Video uses VGA (640x480) resolution" OFF)
