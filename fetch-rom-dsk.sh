@@ -5,6 +5,8 @@ if ! [ -f rom.bin ]; then
     if ! [ -f '4D1F8172 - MacPlus v3.ROM' ]; then
         curl -L 'https://ia902205.us.archive.org/view_archive.php?archive=/18/items/mac_rom_archive_-_as_of_8-19-2011/mac_rom_archive_-_as_of_8-19-2011.zip&file=4D1F8172%20-%20MacPlus%20v3.ROM' > '4D1F8172 - MacPlus v3.ROM'
     fi
+    make -C external/umac clean
+    make -C external/umac DISP_WIDTH=512 DISP_HEIGHT=342
     ./external/umac/main -r '4D1F8172 - MacPlus v3.ROM' -W rom.bin
 fi
 

@@ -108,21 +108,25 @@ static int umac_cursor_button = 0;
 
 #if USE_PSRAM
 static void copy_framebuffer() {
+    uint32_t *src = (uint32_t*)(umac_ram + umac_get_fb_offset());
 #if DISP_WIDTH==640 && DISP_HEIGHT==480
-    uint32_t *src = (uint32_t*)(umac_ram + umac_get_fb_offset()), *dest = umac_framebuffer_mirror;
+    uint32_t *dest = umac_framebuffer_mirror;
     for(int i=0; i<640*480/32; i++) {
         *dest++ = *src++ ^ 0xfffffffful;
     }
-#elif DISP_WIDTH==512 && DISP_HEIGHT==384
-    uint32_t *src = umac_ram + umac_get_fb_offset();
-    for(i=0; i<384; i++) {
-        uint32_t *dest = umac_framebuffer_mirror + 962 + 20 * i;
-        for(j=0; j<16; i++) {
+#elif DISP_WIDTH==512 && DISP_HEIGHT==342
+    #define DISP_XOFFSET ((640 - DISP_WIDTH) / 32 / 2)
+    #define DISP_YOFFSET ((480 - DISP_HEIGHT) / 2)
+    #define LONGS_PER_INPUT_ROW (DISP_WIDTH / 32)
+    #define LONGS_PER_OUTPUT_ROW (640 / 32)
+    for(int i=0; i<DISP_HEIGHT; i++) {
+        uint32_t *dest = umac_framebuffer_mirror + (DISP_YOFFSET * LONGS_PER_OUTPUT_ROW + DISP_XOFFSET) + LONGS_PER_OUTPUT_ROW * i;
+        for(int j=0; j<LONGS_PER_INPUT_ROW; j++) {
           *dest++ = *src++ ^ 0xfffffffful;
         }
     }
 #else
-#error Unsupported display geometry
+#error Unsupported display geometry for framebuffer mirroring
 #endif
 }
 #endif

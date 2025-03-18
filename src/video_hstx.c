@@ -141,10 +141,12 @@ static void __not_in_flash_func(dma_irq_handler)(void) {
     ch->al3_read_addr_trig = (uintptr_t)active_picodvi->dma_commands;
 }
 
-#if DISP_WIDTH != 640 || DISP_HEIGHT != 480
-#error Only VGA resolution is supported
+#if (DISP_WIDTH != 640 || DISP_HEIGHT != 480) && !USE_PSRAM
+#error Only VGA resolution is supported without PSRAM
 #endif
 
+#define REAL_DISP_WIDTH 640
+#define REAL_DISP_HEIGHT 480
 
 void    video_init(uint32_t *framebuffer) {
     picodvi_framebuffer_obj_t *self = &picodvi;
@@ -164,7 +166,7 @@ void    video_init(uint32_t *framebuffer) {
     self->dma_command_channel = dma_claim_unused_channel(true);
 
     size_t pixels_per_word = 32;
-    size_t words_per_line = DISP_WIDTH / pixels_per_word;
+    size_t words_per_line = REAL_DISP_WIDTH / pixels_per_word;
     uint8_t rot = 24; // 24 + color_depth;
     size_t shift_amount = 31; // color_depth % 32;
 
@@ -211,7 +213,7 @@ void    video_init(uint32_t *framebuffer) {
             size_t row = v_scanline - active_start;
             size_t transfer_count = words_per_line;
             self->dma_commands[command_word++] = transfer_count;
-            uintptr_t row_start = row * (DISP_WIDTH / 8) + (uintptr_t)framebuffer;
+            uintptr_t row_start = row * (REAL_DISP_WIDTH / 8) + (uintptr_t)framebuffer;
             self->dma_commands[command_word++] = row_start;
         }
     }
