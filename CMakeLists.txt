@@ -55,6 +55,9 @@ set(HSTX_D2P 18 CACHE STRING "HSTX D2+ PIN")
 option(USE_VGA_RES "Video uses VGA (640x480) resolution" OFF)
 set(VIDEO_PIN 18 CACHE STRING "VGA Video GPIO base pin (followed by VS, CLK, HS)")
 
+option(USE_PSRAM "Locate main Mac ram in PSRAM (only for rp2350 / pico 2)" OFF)
+set(PSRAM_CS 47 CACHE STRING "PSRAM Chip select pin")
+
 # Pins for PIO-based USB host
 set(PIN_USB_HOST_DP 1 CACHE STRING "USB D+ PIN")
 set(PIN_USB_HOST_DM 2 CACHE STRING "USB D- PIN")
@@ -112,25 +115,29 @@ if (USE_HSTX)
    add_compile_definitions(HSTX_CKP=${HSTX_CKP} HSTX_D0P=${HSTX_D0P} HSTX_D1P=${HSTX_D1P} HSTX_D2P=${HSTX_D2P})
    set(VIDEO_SRC src/video_hstx.c)
 else()
-    if (USE_VGA_RES)
-       add_compile_definitions(USE_VGA_RES=1)
-       add_compile_definitions(DISP_WIDTH=640)
-       add_compile_definitions(DISP_HEIGHT=480)
-    else()
-       add_compile_definitions(DISP_WIDTH=512)
-       add_compile_definitions(DISP_HEIGHT=342)
-    endif()
+  if (USE_VGA_RES)
+     add_compile_definitions(USE_VGA_RES=1)
+     add_compile_definitions(DISP_WIDTH=640)
+     add_compile_definitions(DISP_HEIGHT=480)
+  else()
+     add_compile_definitions(DISP_WIDTH=512)
+     add_compile_definitions(DISP_HEIGHT=342)
+  endif()
 
-    add_compile_definitions(GPIO_VID_BASE=${VIDEO_PIN})
-    set(VIDEO_SRC src/video_vga.c)
-
-
+  add_compile_definitions(GPIO_VID_BASE=${VIDEO_PIN})
+  set(VIDEO_SRC src/video_vga.c)
 endif()
 
 add_compile_definitions(PIN_USB_HOST_DP=${PIN_USB_HOST_DP})
 add_compile_definitions(PIN_USB_HOST_DM=${PIN_USB_HOST_DM})
 add_compile_definitions(PICO_DEFAULT_PIO_USB_DP_PIN=${PIN_USB_HOST_DP})
 add_compile_definitions(PICO_DEFAULT_PIO_USB_DM_PIN=${PIN_USB_HOST_DM})
+
+if (USE_PSRAM)
+  add_compile_definitions(PIN_PSRAM_CS=${PSRAM_CS} USE_PSRAM=1)
+else()
+  add_compile_definitions(USE_PSRAM=0)
+endif()
 
 if (TARGET tinyusb_device)
   add_executable(firmware
