@@ -106,6 +106,7 @@ static int umac_cursor_x = 0;
 static int umac_cursor_y = 0;
 static int umac_cursor_button = 0;
 
+#define umac_get_audio_offset() (RAM_SIZE - 768)
 #if USE_PSRAM
 static void copy_framebuffer() {
     uint32_t *src = (uint32_t*)(umac_ram + umac_get_fb_offset());
@@ -124,6 +125,11 @@ static void copy_framebuffer() {
         for(int j=0; j<LONGS_PER_INPUT_ROW; j++) {
           *dest++ = *src++ ^ 0xfffffffful;
         }
+    }
+    uint16_t *src16 = (uint16_t*)(umac_ram + umac_get_audio_offset());
+    for(int i=0; i<370; i++) {
+        uint32_t *dest = umac_framebuffer_mirror + LONGS_PER_OUTPUT_ROW * i;
+        *dest = *src16++;
     }
 #else
 #error Unsupported display geometry for framebuffer mirroring
