@@ -75,7 +75,7 @@ static const uint8_t umac_rom[] = {
 
 #if USE_PSRAM
 static uint32_t umac_framebuffer_mirror[640*480/32];
-#define umac_ram ((uint8_t*)0x15000000)
+#define umac_ram ((uint8_t*)0x11000000)
 #else
 static uint8_t umac_ram[RAM_SIZE];
 #endif
