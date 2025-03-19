@@ -40,7 +40,7 @@ while getopts "hvd:m:" o; do
 done
 
 TAG=fruitjam_${DISP_WIDTH}x${DISP_HEIGHT}_${MEMSIZE}k
-PSRAM=$((MEMSIZE > 448 || DISP_WIDTH > 640))
+PSRAM=$((MEMSIZE > 448 || DISP_WIDTH < 640))
 if [ $PSRAM -ne 0 ] ; then
     TAG=${TAG}_psram
     CMAKE_ARGS="$CMAKE_ARGS -DUSE_PSRAM=1"
