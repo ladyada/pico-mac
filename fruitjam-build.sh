@@ -67,7 +67,7 @@ rm -rf build_${TAG}
 cmake -S . -B build_${TAG} \
     -DPICO_SDK_PATH=../pico-sdk \
     -DPICOTOOL_FETCH_FROM_GIT_PATH="$(pwd)/picotool" \
-    -DBOARD=adafruit_fruit_jam -DPICO_BOARD=pimoroni_pico_plus2_rp2350 \
+    -DBOARD=adafruit_fruit_jam -DPICO_BOARD=adafruit_fruit_jam \
     -DMEMSIZE=${MEMSIZE} \
     -DUSE_HSTX=1 \
     -DSD_TX=35 -DSD_RX=36 -DSD_SCK=34 -DSD_CS=39 -DUSE_SD=1 \
