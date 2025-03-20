@@ -143,7 +143,7 @@ if (USE_AUDIO)
    add_subdirectory(external/pico-extras/src/rp2_common/pico_audio_i2s)
    add_subdirectory(external/pico-extras/src/common/pico_audio)
    add_subdirectory(external/pico-extras/src/common/pico_util_buffer)
-   add_compile_definitions(ENABLE_AUDIO=1 PICO_AUDIO_I2S_PIO=1 PICO_AUDIO_I2S_DMA_IRQ=0 PICO_AUDIO_I2S_DATA_PIN=40 PICO_AUDIO_I2S_CLOCK_PIN_BASE=41)
+   add_compile_definitions(ENABLE_AUDIO=1 PICO_AUDIO_I2S_PIO=1 PICO_AUDIO_I2S_DMA_IRQ=0 PICO_AUDIO_I2S_DATA_PIN=40 PICO_AUDIO_I2S_CLOCK_PIN_BASE=41 PICO_AUDIO_I2S_MONO_INPUT=1)
    set(EXTRA_AUDIO_LIB pico_util_buffer pico_audio pico_audio_i2s)
 endif()
 
