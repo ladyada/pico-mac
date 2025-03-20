@@ -141,10 +141,6 @@ static void __not_in_flash_func(dma_irq_handler)(void) {
     ch->al3_read_addr_trig = (uintptr_t)active_picodvi->dma_commands;
 }
 
-#if (DISP_WIDTH != 640 || DISP_HEIGHT != 480) && !USE_PSRAM
-#error Only VGA resolution is supported without PSRAM
-#endif
-
 #define REAL_DISP_WIDTH 640
 #define REAL_DISP_HEIGHT 480
 
