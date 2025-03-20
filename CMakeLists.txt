@@ -62,6 +62,9 @@ set(PSRAM_CS 47 CACHE STRING "PSRAM Chip select pin")
 set(PIN_USB_HOST_DP 1 CACHE STRING "USB D+ PIN")
 set(PIN_USB_HOST_DM 2 CACHE STRING "USB D- PIN")
 
+set(USE_AUDIO 1 CACHE STRING "Use audio")
+set(PIN_AUDIO_PWM 41 CACHE STRING "Pin for PWM audio")
+
 # See below, -DMEMSIZE=<size in KB> will configure umac's memory size,
 # overriding defaults.
 
@@ -136,6 +139,14 @@ else()
   add_compile_definitions(USE_PSRAM=0)
 endif()
 
+if (USE_AUDIO)
+   add_subdirectory(external/pico-extras/src/rp2_common/pico_audio_i2s)
+   add_subdirectory(external/pico-extras/src/common/pico_audio)
+   add_subdirectory(external/pico-extras/src/common/pico_util_buffer)
+   add_compile_definitions(ENABLE_AUDIO=1 PICO_AUDIO_I2S_PIO=1 PICO_AUDIO_I2S_DMA_IRQ=0 PICO_AUDIO_I2S_DATA_PIN=40 PICO_AUDIO_I2S_CLOCK_PIN_BASE=41)
+   set(EXTRA_AUDIO_LIB pico_util_buffer pico_audio pico_audio_i2s)
+endif()
+
 if (TARGET tinyusb_device)
   add_executable(firmware
     src/main.c
@@ -171,6 +182,7 @@ if (TARGET tinyusb_device)
     hardware_pio
     hardware_sync
     ${EXTRA_SD_LIB}
+    ${EXTRA_AUDIO_LIB}
     )
 
   target_include_directories(firmware PRIVATE
