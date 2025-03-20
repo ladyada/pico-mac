@@ -10,3 +10,6 @@
 [submodule "lib/Pico-PIO-USB"]
 	path = lib/Pico-PIO-USB
 	url = https://github.com/tannewt/Pico-PIO-USB
+[submodule "external/pico-extras"]
+	path = external/pico-extras
+	url = https://github.com/raspberrypi/pico-extras.git

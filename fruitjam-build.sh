@@ -39,8 +39,10 @@ while getopts "hvd:m:" o; do
     esac
 done
 
+shift $((OPTIND-1))
+
 TAG=fruitjam_${DISP_WIDTH}x${DISP_HEIGHT}_${MEMSIZE}k
-PSRAM=$((MEMSIZE > 448 || DISP_WIDTH > 640))
+PSRAM=$(MEMSIZE > 448)
 if [ $PSRAM -ne 0 ] ; then
     TAG=${TAG}_psram
     CMAKE_ARGS="$CMAKE_ARGS -DUSE_PSRAM=1"
@@ -66,9 +68,10 @@ fi
 rm -rf build_${TAG}
 cmake -S . -B build_${TAG} \
     -DPICO_SDK_PATH=../pico-sdk \
-    -DBOARD=adafruit_fruit_jam -DPICO_BOARD=pimoroni_pico_plus2_rp2350 \
+    -DPICOTOOL_FETCH_FROM_GIT_PATH="$(pwd)/picotool" \
+    -DBOARD=adafruit_fruit_jam -DPICO_BOARD=adafruit_fruit_jam \
     -DMEMSIZE=${MEMSIZE} \
     -DUSE_HSTX=1 \
     -DSD_TX=35 -DSD_RX=36 -DSD_SCK=34 -DSD_CS=39 -DUSE_SD=1 \
-    ${CMAKE_ARGS}
+    ${CMAKE_ARGS} "$@"
 make -C build_${TAG} -j$(nproc)

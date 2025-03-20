@@ -57,6 +57,14 @@
 #include "hardware/structs/qmi.h"
 #include "hardware/structs/xip.h"
 #endif
+
+#if ENABLE_AUDIO
+#include "pico/audio_i2s.h"
+uint8_t *audio_base;
+static void audio_setup();
+static bool audio_poll();
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////
 // Imports and data
 
@@ -97,8 +105,8 @@ static void     poll_led_etc()
         if (absolute_time_diff_us(last, now) > 500*1000) {
                 last = now;
 
-                led_on ^= 1;
-                gpio_put(GPIO_LED_PIN, led_on);
+                //led_on ^= 1;
+                //gpio_put(GPIO_LED_PIN, led_on);
         }
 }
 
@@ -126,11 +134,6 @@ static void copy_framebuffer() {
           *dest++ = *src++ ^ 0xfffffffful;
         }
     }
-    uint16_t *src16 = (uint16_t*)(umac_ram + umac_get_audio_offset());
-    for(int i=0; i<370; i++) {
-        uint32_t *dest = umac_framebuffer_mirror + LONGS_PER_OUTPUT_ROW * i;
-        *dest = *src16++;
-    }
 #else
 #error Unsupported display geometry for framebuffer mirroring
 #endif
@@ -147,7 +150,11 @@ static void     poll_umac()
 
         int64_t p_1hz = absolute_time_diff_us(last_1hz, now);
         int64_t p_vsync = absolute_time_diff_us(last_vsync, now);
-        if (p_vsync >= 16667) {
+        bool pending_vsync = p_vsync > 16667;
+#if ENABLE_AUDIO
+        pending_vsync |= audio_poll();
+#endif
+        if (pending_vsync) {
 #if USE_PSRAM
                 copy_framebuffer();
 #endif
@@ -305,6 +312,9 @@ static void     core1_main()
         video_init((uint32_t *)(umac_ram + umac_get_fb_offset()));
 #endif
 
+#if ENABLE_AUDIO
+        audio_base = (uint8_t*)umac_ram + umac_get_audio_offset();
+#endif
         printf("Enjoyable Mac times now begin:\n\n");
 
         while (true) {
@@ -464,6 +474,10 @@ int     main()
 	stdio_init_all();
         io_init();
 
+#if ENABLE_AUDIO
+        audio_setup();
+#endif
+
         multicore_launch_core1(core1_main);
 
 	printf("Starting, init usb\n");
@@ -494,3 +508,77 @@ int     main()
 	return 0;
 }
 
+#if ENABLE_AUDIO
+static int volscale;
+
+
+#define SAMPLES_PER_BUFFER (370)
+int16_t audio[SAMPLES_PER_BUFFER];
+
+void umac_audio_trap() {
+static int led_on;
+                led_on ^= 1;
+                gpio_put(GPIO_LED_PIN, 1);
+    int32_t  offset = 128;
+    uint16_t *audiodata = (uint16_t*)audio_base;
+    int scale = volscale;
+    if (!scale) {
+        memset(audio, 0, sizeof(audio));
+        return;
+    }
+    int16_t *stream = audio;
+    for(int i=0; i<SAMPLES_PER_BUFFER; i++) {
+        int32_t a = (*audiodata++ & 0xff) - offset; 
+        a = (a * scale) >> 8;
+        *stream++ = a;
+    }
+}
+
+struct audio_buffer_pool *producer_pool;
+
+static audio_format_t audio_format = {
+        .format = AUDIO_BUFFER_FORMAT_PCM_S16,
+        .sample_freq = 20000,
+        .channel_count = 1,
+};
+
+const struct audio_i2s_config config =
+        {
+            .data_pin = PICO_AUDIO_I2S_DATA_PIN,
+            .clock_pin_base = PICO_AUDIO_I2S_CLOCK_PIN_BASE,
+            .pio_sm = 0,
+            .dma_channel = 3
+        };
+
+static struct audio_buffer_format producer_format = {
+        .format = &audio_format,
+        .sample_stride = 2
+};
+
+static void audio_setup() {
+    const struct audio_format *output_format = audio_i2s_setup(&audio_format, &config);
+    assert(output_format);
+    if (!output_format) {
+        panic("PicoAudio: Unable to open audio device.\n");
+    }
+    producer_pool = audio_new_producer_pool(&producer_format, 3, SAMPLES_PER_BUFFER);
+    assert(producer_pool);
+    bool ok = audio_i2s_connect(producer_pool);
+    assert(ok);
+    audio_i2s_set_enabled(true);
+}
+
+static bool audio_poll() {
+    audio_buffer_t *buffer = take_audio_buffer(producer_pool, false);
+    if (!buffer) return false;
+                gpio_put(GPIO_LED_PIN, 0);
+    memcpy(buffer->buffer->bytes, audio, sizeof(audio));
+    buffer->sample_count = SAMPLES_PER_BUFFER;
+    give_audio_buffer(producer_pool, buffer);
+    return true;
+}
+
+void umac_audio_cfg(int volume, int sndres) {
+    volscale = sndres ? 0 : 65536 * volume / 7;
+}
+#endif

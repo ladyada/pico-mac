@@ -300,10 +300,10 @@ void    video_init(uint32_t *framebuffer) {
         false
         );
 
-    dma_hw->ints0 = (1u << self->dma_pixel_channel);
-    dma_hw->inte0 = (1u << self->dma_pixel_channel);
-    irq_set_exclusive_handler(DMA_IRQ_0, dma_irq_handler);
-    irq_set_enabled(DMA_IRQ_0, true);
+    dma_hw->ints2 = (1u << self->dma_pixel_channel);
+    dma_hw->inte2 = (1u << self->dma_pixel_channel);
+    irq_set_exclusive_handler(DMA_IRQ_2, dma_irq_handler);
+    irq_set_enabled(DMA_IRQ_2, true);
 
     bus_ctrl_hw->priority = BUSCTRL_BUS_PRIORITY_DMA_W_BITS | BUSCTRL_BUS_PRIORITY_DMA_R_BITS;
 
